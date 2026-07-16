@@ -19,6 +19,8 @@
 - Docker (& Docker Compose)
 
 ##### Try it now with:
+
 ```bash
 docker compose run --rm php-cli bin/snake
 ```
+Use `--sprite text` to disable in-terminal emoji.
