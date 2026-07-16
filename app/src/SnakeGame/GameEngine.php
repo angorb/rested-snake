@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Angorb\RestedSnake;
+namespace Angorb\RestedSnake\SnakeGame;
 
 final class GameEngine implements \JsonSerializable
 {
@@ -110,7 +110,12 @@ final class GameEngine implements \JsonSerializable
 
         [$nextX, $nextY] = $this->snake->getNextHeadPosition();
 
-        $willEatFood = $this->board->getCell($nextX, $nextY) === CellType::Food;
+        try {
+            $willEatFood = $this->board->getCell($nextX, $nextY) === CellType::Food;
+        } catch (\OutOfBoundsException $e) {
+            $this->gameOver = true;
+            return;
+        }
 
         $this->snake->move($willEatFood);
 

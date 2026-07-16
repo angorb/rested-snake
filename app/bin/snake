@@ -5,5 +5,5 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-$app = new \Angorb\RestedSnake\Cli\SnakeApplication();
+$app = new \Angorb\RestedSnake\SnakeGame\Cli\SnakeApplication();
 $app->run();

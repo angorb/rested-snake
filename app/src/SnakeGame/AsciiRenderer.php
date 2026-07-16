@@ -2,10 +2,26 @@
 
 declare(strict_types=1);
 
-namespace Angorb\RestedSnake;
+namespace Angorb\RestedSnake\SnakeGame;
+
+use Angorb\RestedSnake\SnakeGame\Sprites\SpriteInterface;
 
 final class AsciiRenderer
 {
+    public function __construct(private SpriteInterface $sprite)
+    {
+    }
+
+    /**
+     * Gets the sprite used by the renderer.
+     *
+     * @return \Angorb\RestedSnake\SnakeGame\Sprites\SpriteInterface
+     */
+    public function getSprite(): SpriteInterface
+    {
+        return $this->sprite;
+    }
+
     /**
      * Renders the game board and snake as an ASCII string.
      *
@@ -20,14 +36,14 @@ final class AsciiRenderer
         for ($y = 0; $y < $board->getHeight(); $y++) {
             for ($x = 0; $x < $board->getWidth(); $x++) {
                 if ($snake->occupies($x, $y)) {
-                    $output .= 'S';
+                    $output .= $this->sprite->getSnake();
                     continue;
                 }
 
                 $output .= match ($board->getCell($x, $y)) {
-                    CellType::Empty => '.',
-                    CellType::Food  => 'F',
-                    CellType::Wall  => '#',
+                    CellType::Empty => $this->sprite->getEmpty(),
+                    CellType::Food  =>  $this->sprite->getFood(),
+                    CellType::Wall  => $this->sprite->getWall(),
                 };
             }
 

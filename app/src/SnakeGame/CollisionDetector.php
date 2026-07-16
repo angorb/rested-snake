@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Angorb\RestedSnake;
+namespace Angorb\RestedSnake\SnakeGame;
 
 final class CollisionDetector
 {
