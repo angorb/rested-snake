@@ -5,11 +5,12 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/vendor/autoload.php';
 
-use Angorb\RestedSnake\AsciiRenderer;
-use Angorb\RestedSnake\Board;
-use Angorb\RestedSnake\FoodSpawner;
-use Angorb\RestedSnake\GameEngine;
-use Angorb\RestedSnake\Snake;
+use Angorb\RestedSnake\SnakeGame\AsciiRenderer;
+use Angorb\RestedSnake\SnakeGame\Board;
+use Angorb\RestedSnake\SnakeGame\FoodSpawner;
+use Angorb\RestedSnake\SnakeGame\GameEngine;
+use Angorb\RestedSnake\SnakeGame\Snake;
+use Angorb\RestedSnake\SnakeGame\Sprites\EmojiSprite;
 
 // Create the game objects.
 $board = new Board(40, 10);
@@ -19,7 +20,8 @@ $foodSpawner->spawnFood($snake);
 
 $game = new GameEngine($board, $snake, $foodSpawner);
 
-$renderer = new AsciiRenderer();
+$sprite = new EmojiSprite();
+$renderer = new AsciiRenderer($sprite);
 
 echo "Initial board:\n";
 echo $renderer->render($game->getBoard(), $game->getSnake());

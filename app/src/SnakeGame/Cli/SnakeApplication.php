@@ -2,13 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Angorb\RestedSnake\Cli;
+namespace Angorb\RestedSnake\SnakeGame\Cli;
 
-use Angorb\RestedSnake\AsciiRenderer;
-use Angorb\RestedSnake\Board;
-use Angorb\RestedSnake\FoodSpawner;
-use Angorb\RestedSnake\GameEngine;
-use Angorb\RestedSnake\Snake;
+use Angorb\RestedSnake\SnakeGame\AsciiRenderer;
+use Angorb\RestedSnake\SnakeGame\Board;
+use Angorb\RestedSnake\SnakeGame\FoodSpawner;
+use Angorb\RestedSnake\SnakeGame\GameEngine;
+use Angorb\RestedSnake\SnakeGame\Snake;
+use Angorb\RestedSnake\SnakeGame\Sprites\EmojiSprite;
 use League\CLImate\CLImate;
 
 final class SnakeApplication
@@ -33,7 +34,8 @@ final class SnakeApplication
             $foodSpawner
         );
 
-        $this->renderer = new AsciiRenderer();
+        $sprite = new EmojiSprite();
+        $this->renderer = new AsciiRenderer($sprite);
     }
 
 
@@ -45,16 +47,6 @@ final class SnakeApplication
     public function run(): void
     {
         $this->cli->clear();
-
-        $this->cli->bold()->green('RESTed Snake CLI');
-        $this->cli->out('');
-        $this->cli->out('Controls:');
-        $this->cli->out('  w = up');
-        $this->cli->out('  s = down');
-        $this->cli->out('  a = left');
-        $this->cli->out('  d = right');
-        $this->cli->out('  q = quit');
-        $this->cli->out('');
 
         while (!$this->game->isGameOver()) {
             $this->draw();
@@ -94,6 +86,16 @@ final class SnakeApplication
     private function draw(): void
     {
         $this->cli->clear();
+
+        $this->cli->bold()->green('RESTed Snake CLI');
+        $this->cli->out('');
+        $this->cli->out('Controls:');
+        $this->cli->out('  w = up');
+        $this->cli->out('  s = down');
+        $this->cli->out('  a = left');
+        $this->cli->out('  d = right');
+        $this->cli->out('  q = quit');
+        $this->cli->out('');
 
         $this->cli->out(
             $this->renderer->render(
