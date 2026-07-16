@@ -1,0 +1,63 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+require_once __DIR__ . '/vendor/autoload.php';
+
+use Angorb\RestedSnake\AsciiRenderer;
+use Angorb\RestedSnake\Board;
+use Angorb\RestedSnake\FoodSpawner;
+use Angorb\RestedSnake\GameEngine;
+use Angorb\RestedSnake\Snake;
+
+// Create the game objects.
+$board = new Board(40, 10);
+$snake = new Snake(5, 5, 'up');
+$foodSpawner = new FoodSpawner($board);
+$foodSpawner->spawnFood($snake);
+
+$game = new GameEngine($board, $snake, $foodSpawner);
+
+$renderer = new AsciiRenderer();
+
+echo "Initial board:\n";
+echo $renderer->render($game->getBoard(), $game->getSnake());
+
+$moves = [
+    'up',
+    'left',
+    'down',
+];
+
+foreach ($moves as $direction) {
+    $game->changeSnakeDirection($direction);
+    $game->tick();
+
+    echo "After moving {$direction}:\n";
+    echo $renderer->render($game->getBoard(), $game->getSnake());
+
+    if ($game->isGameOver()) {
+        echo "Game Over!\n";
+        exit(0);
+    }
+}
+
+echo "Random movement...\n";
+
+$directions = ['up', 'down', 'left', 'right'];
+
+while (!$game->isGameOver()) {
+    $direction = $directions[array_rand($directions)];
+
+    $game->changeSnakeDirection($direction);
+    $game->tick();
+
+    echo "Move: {$direction}\n";
+    echo $renderer->render($game->getBoard(), $game->getSnake());
+
+    usleep(250000);
+}
+
+echo "Game Over!\n";
+echo "Final score: {$game->getScore()}\n";

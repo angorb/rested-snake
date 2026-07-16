@@ -1,0 +1,13 @@
+{
+    "autoload": {
+        "psr-4": {
+            "Angorb\\RestedSnake\\": "src/"
+        }
+    },
+    "require": {
+        "league/climate": "^3.11"
+    },
+    "require-dev": {
+        "spatie/ray": "^1.48"
+    }
+}
