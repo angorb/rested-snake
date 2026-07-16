@@ -9,7 +9,7 @@ use Angorb\RestedSnake\SnakeGame\Board;
 use Angorb\RestedSnake\SnakeGame\FoodSpawner;
 use Angorb\RestedSnake\SnakeGame\GameEngine;
 use Angorb\RestedSnake\SnakeGame\Snake;
-use Angorb\RestedSnake\SnakeGame\Sprites\EmojiSprite;
+use Angorb\RestedSnake\SnakeGame\Sprites\{EmojiSprite, TextSprite, SpriteInterface};
 use League\CLImate\CLImate;
 
 final class SnakeApplication
@@ -34,8 +34,40 @@ final class SnakeApplication
             $foodSpawner
         );
 
-        $sprite = new EmojiSprite();
+        // check if there is a cli argument for sprite type
+        $sprite = $this->getSpriteTypeFromArgs();
         $this->renderer = new AsciiRenderer($sprite);
+    }
+
+    private function getSpriteTypeFromArgs(): SpriteInterface
+    {
+        $this->cli->arguments->add([
+            'type' => [
+                'longPrefix'   => 'sprite',
+                'description'  => 'Sprite type to use for rendering (emoji or text)',
+                'defaultValue' => 'emoji',
+                'required'     => true,
+            ],
+        ]);
+
+        $this->cli->usage();
+
+        $this->cli->arguments->parse();
+
+        $spriteType = $this->cli->arguments->get('type');
+
+        $this->cli->out(
+            sprintf(
+                'Using sprite type: %s',
+                $spriteType
+            )
+        );
+
+        return match ($spriteType) {
+            'emoji' => new EmojiSprite(),
+            'text' => new TextSprite(),
+            default => new EmojiSprite(),
+        };
     }
 
 
