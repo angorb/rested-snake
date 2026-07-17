@@ -174,4 +174,23 @@ final class GameEngine implements \JsonSerializable
             'snake'      => $this->snake,
         ];
     }
+
+    /**
+     * Creates a GameEngine instance from an array.
+     *
+     * @param array $data
+     * @return self
+     */
+    public static function fromArray(array $data): self
+    {
+        $board = Board::fromArray($data['board']);
+        $snake = Snake::fromArray($data['snake']);
+        $foodSpawner = new FoodSpawner($board);
+
+        $gameEngine = new self($board, $snake, $foodSpawner);
+        $gameEngine->score = $data['score'];
+        $gameEngine->gameOver = $data['gameOver'];
+
+        return $gameEngine;
+    }
 }

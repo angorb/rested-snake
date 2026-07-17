@@ -45,7 +45,7 @@ final class SnakeApplication
             'type' => [
                 'longPrefix'   => 'sprite',
                 'description'  => 'Sprite type to use for rendering (emoji or text)',
-                'defaultValue' => 'emoji',
+                'defaultValue' => 'text',
                 'required'     => true,
             ],
         ]);
@@ -66,7 +66,7 @@ final class SnakeApplication
         return match ($spriteType) {
             'emoji' => new EmojiSprite(),
             'text' => new TextSprite(),
-            default => new EmojiSprite(),
+            default => new TextSprite(),
         };
     }
 
@@ -94,6 +94,8 @@ final class SnakeApplication
             $this->handleInput($input);
 
             $this->game->tick();
+
+            $this->saveGameState();
         }
 
         $this->cli->out('');
@@ -107,6 +109,25 @@ final class SnakeApplication
                 'Final score: %d',
                 $this->game->getScore()
             )
+        );
+    }
+
+    /**
+     * Saves the current game state to a JSON file.
+     *
+     * @return void
+     */
+    private function saveGameState(): void
+    {
+        $state = [
+            'board' => $this->game->getBoard(),
+            'snake' => $this->game->getSnake(),
+            'score' => $this->game->getScore(),
+        ];
+
+        file_put_contents(
+            'snake_game_state.json',
+            json_encode($state, JSON_PRETTY_PRINT)
         );
     }
 
