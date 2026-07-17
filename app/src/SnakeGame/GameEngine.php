@@ -189,7 +189,7 @@ final class GameEngine implements \JsonSerializable
 
         $gameEngine = new self($board, $snake, $foodSpawner);
         $gameEngine->score = $data['score'];
-        $gameEngine->gameOver = $data['gameOver'];
+        $gameEngine->gameOver = $data['gameOver'] ?? false;
 
         return $gameEngine;
     }

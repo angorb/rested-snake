@@ -143,7 +143,7 @@ final class Board implements \JsonSerializable
             'height' => $this->height,
             'cells' => array_map(
                 static fn(array $row): array => array_map(
-                    static fn(CellType $cell): string => $cell->name,
+                    static fn(CellType $cell): int => $cell->value,
                     $row
                 ),
                 $this->cells
@@ -166,8 +166,8 @@ final class Board implements \JsonSerializable
         $board = new self($width, $height);
 
         foreach ($cellsData as $y => $row) {
-            foreach ($row as $x => $cellName) {
-                $cellType = CellType::from($cellName);
+            foreach ($row as $x => $cellValue) {
+                $cellType = CellType::from($cellValue);
                 $board->setCell($x, $y, $cellType);
             }
         }
