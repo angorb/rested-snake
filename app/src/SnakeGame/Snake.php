@@ -192,6 +192,26 @@ final class Snake implements \JsonSerializable
     }
 
     /**
+     * Reconstructs a Snake object from array data.
+     *
+     * @param array $data
+     * @return self
+     */
+    public static function fromArray(array $data): self
+    {
+        $snake = new self(
+            $data['body'][0][0],
+            $data['body'][0][1],
+            $data['direction']
+        );
+
+        // Reconstruct the body.
+        $snake->body = $data['body'];
+
+        return $snake;
+    }
+
+    /**
      * Asserts that the given direction is valid.
      *
      * @param string $direction

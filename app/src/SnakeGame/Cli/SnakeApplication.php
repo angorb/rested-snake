@@ -22,6 +22,23 @@ final class SnakeApplication
     {
         $this->cli = new CLImate();
 
+        $sprite = $this->getSpriteTypeFromArgs();
+        $this->renderer = new AsciiRenderer($sprite);
+
+        $this->loadGameState();
+
+        if (!isset($this->game)) {
+            $this->startNewGame();
+        }
+    }
+
+    /**
+     * Starts a new game with a fresh board, snake, and food spawner.
+     *
+     * @return void
+     */
+    private function startNewGame(): void
+    {
         $board = new Board(20, 10);
         $snake = new Snake(10, 5, 'right');
 
@@ -33,19 +50,20 @@ final class SnakeApplication
             $snake,
             $foodSpawner
         );
-
-        // check if there is a cli argument for sprite type
-        $sprite = $this->getSpriteTypeFromArgs();
-        $this->renderer = new AsciiRenderer($sprite);
     }
 
+    /**
+     * Determines the sprite type to use for rendering based on CLI arguments.
+     *
+     * @return \Angorb\RestedSnake\SnakeGame\Sprites\SpriteInterface
+     */
     private function getSpriteTypeFromArgs(): SpriteInterface
     {
         $this->cli->arguments->add([
             'type' => [
                 'longPrefix'   => 'sprite',
                 'description'  => 'Sprite type to use for rendering (emoji or text)',
-                'defaultValue' => 'emoji',
+                'defaultValue' => 'text',
                 'required'     => true,
             ],
         ]);
@@ -66,7 +84,7 @@ final class SnakeApplication
         return match ($spriteType) {
             'emoji' => new EmojiSprite(),
             'text' => new TextSprite(),
-            default => new EmojiSprite(),
+            default => new TextSprite(),
         };
     }
 
@@ -94,10 +112,19 @@ final class SnakeApplication
             $this->handleInput($input);
 
             $this->game->tick();
+
+            $this->saveGameState();
         }
 
         $this->cli->out('');
 
+        if ($this->game->isGameOver()) {
+            $this->displayGameOver();
+        }
+    }
+
+    private function displayGameOver(): void
+    {
         $this->cli
             ->red()
             ->out('Game Over!');
@@ -108,6 +135,62 @@ final class SnakeApplication
                 $this->game->getScore()
             )
         );
+    }
+
+    /**
+     * Saves the current game state to a JSON file.
+     *
+     * @return void
+     */
+    private function saveGameState(): void
+    {
+        $state = [
+            'board' => $this->game->getBoard(),
+            'snake' => $this->game->getSnake(),
+            'score' => $this->game->getScore(),
+        ];
+
+        file_put_contents(
+            'snake_game_state.json',
+            json_encode($state, JSON_PRETTY_PRINT)
+        );
+    }
+
+    /**
+     * Loads the game state from a JSON file if it exists.
+     *
+     * @return void
+     */
+    private function loadGameState(): void
+    {
+        if (!file_exists('snake_game_state.json')) {
+            return;
+        }
+
+        try {
+            $state = json_decode(
+                json: file_get_contents('snake_game_state.json'),
+                associative: true,
+                flags: JSON_THROW_ON_ERROR
+            );
+
+            $this->game = GameEngine::fromArray($state);
+        } catch (\JsonException $e) {
+            $this->cli->red()->out('Failed to load game state: ' . $e->getMessage());
+            $this->deleteGameState();
+        }
+    }
+
+    /**
+     * Deletes the saved game state file.
+     *
+     * @return void
+     */
+    private function deleteGameState(): void
+    {
+        if (file_exists('snake_game_state.json')) {
+            unlink('snake_game_state.json');
+        }
     }
 
     /**

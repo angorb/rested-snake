@@ -143,11 +143,35 @@ final class Board implements \JsonSerializable
             'height' => $this->height,
             'cells' => array_map(
                 static fn(array $row): array => array_map(
-                    static fn(CellType $cell): string => $cell->name,
+                    static fn(CellType $cell): int => $cell->value,
                     $row
                 ),
                 $this->cells
             ),
         ];
+    }
+
+    /**
+     * Creates a Board instance from a JSON-friendly array.
+     *
+     * @param array $data
+     * @return self
+     */
+    public static function fromArray(array $data): self
+    {
+        $width = $data['width'];
+        $height = $data['height'];
+        $cellsData = $data['cells'];
+
+        $board = new self($width, $height);
+
+        foreach ($cellsData as $y => $row) {
+            foreach ($row as $x => $cellValue) {
+                $cellType = CellType::from($cellValue);
+                $board->setCell($x, $y, $cellType);
+            }
+        }
+
+        return $board;
     }
 }
