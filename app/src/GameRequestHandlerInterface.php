@@ -12,6 +12,4 @@ interface GameRequestHandlerInterface
     public function createGame(ServerRequestInterface $request, array $args): ResponseInterface;
 
     public function getGameState(ServerRequestInterface $request, array $args): ResponseInterface;
-
-    public function moveSnake(ServerRequestInterface $request, array $args): ResponseInterface;
 }

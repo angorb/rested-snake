@@ -63,6 +63,12 @@ class Controller implements GameRequestHandlerInterface, RouteRegistrarInterface
      */
     public function moveSnake(ServerRequestInterface $request, array $args): ResponseInterface
     {
+        if (!isset($args['direction']) || !in_array($args['direction'], ['up', 'down', 'left', 'right'])) {
+            return new \Laminas\Diactoros\Response\JsonResponse([
+                'error' => 'Invalid direction. Use "up", "down", "left", or "right".',
+            ], 400);
+        }
+
         $gameState = $this->loadGameState();
         if (empty($gameState)) {
             return new \Laminas\Diactoros\Response\JsonResponse([
@@ -104,7 +110,7 @@ class Controller implements GameRequestHandlerInterface, RouteRegistrarInterface
 
         $renderedGameState = $renderer->render($board, $snake);
 
-        $response = match ($args['type']) {
+        return match ($args['type']) {
             'text' => new \Laminas\Diactoros\Response\TextResponse($renderedGameState),
             'html' => new \Laminas\Diactoros\Response\HtmlResponse(
                 '<pre>' . $renderedGameState . '</pre>'
@@ -113,27 +119,14 @@ class Controller implements GameRequestHandlerInterface, RouteRegistrarInterface
                 'error' => 'Invalid render type. Use "text" or "html".',
             ], 400),
         };
-
-        return $response;
-    }
-
-    public function test(ServerRequestInterface $request, array $args): ResponseInterface
-    {
-        return new \Laminas\Diactoros\Response\JsonResponse([
-            'status' => 'ok',
-            'message' => "Hello, $args[word]!",
-        ]);
     }
 
     public static function registerRoutes(\League\Route\RouteCollectionInterface $router): void
     {
         $router->map('POST', '/game', [self::class, 'createGame']);
         $router->map('GET', '/game', [self::class, 'getGameState']);
-        //$router->map('POST', '/snake/move/{direction}', [self::class, 'moveSnake']); // TODO - remove this
-        $router->map('POST', '/move', [self::class, 'moveSnake']);
+        $router->map('POST', '/move/{direction}', [self::class, 'moveSnake']);
         $router->map('GET', '/render/{type}', [self::class, 'renderSnakeGame']);
-
-        $router->map('GET', '/test/{word}', [self::class, 'test']); // DEBUG route for testing purposes
     }
 
     /**

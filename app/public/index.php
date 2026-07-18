@@ -27,9 +27,6 @@ $repositoryFilePath = __DIR__ . '/../data/game_state.json';
 $repository = new \Angorb\RestedSnake\BasicFileRepository($repositoryFilePath);
 $container->add(\Angorb\RestedSnake\GameRepositoryInterface::class, $repository);
 
-// add requests to the container so they can be injected into route handlers
-//$container->add(\Namespace\Somthingt::class)->addArgument($request);
-
 $applicationStrategy = new \League\Route\Strategy\ApplicationStrategy();
 $applicationStrategy->setContainer($container);
 $jsonStrategy = new \League\Route\Strategy\JsonStrategy($responseFactory);
@@ -47,11 +44,14 @@ $router->group('/v1/snake', function ($router) {
 
 // emit the HTTP response
 try {
-    // DEBUG
-    ray($router, $container, $request);
     $response = $router->dispatch($request);
-    (new \Laminas\HttpHandlerRunner\Emitter\SapiEmitter())->emit($response);
+} catch (\League\Route\Http\Exception $ex) {
+    $response = $ex->buildJsonResponse($responseFactory->createResponse());
 } catch (\Error | \Exception $ex) {
   // TODO - log the error
-    throw $ex; // rethrow the exception to be handled by the framework or error handler
+    $response = new \Laminas\Diactoros\Response\JsonResponse([
+        'error' => $ex->getMessage(),
+    ], 500);
 }
+
+ (new \Laminas\HttpHandlerRunner\Emitter\SapiEmitter())->emit($response);
