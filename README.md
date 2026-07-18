@@ -6,6 +6,7 @@
 
 - The hit game "Snake"
 - Enterprise-grade PHP 8.4
+- Now in Early Access!
 
 ## Installation
 
