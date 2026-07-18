@@ -2,25 +2,143 @@
 
 *Nobody asked for this.*
 
-<img width="925" height="972" alt="image" src="https://github.com/user-attachments/assets/92466e22-7dc0-40ae-b1ab-a50fbe985957" />
-
 ## Features
 
 - The hit game "Snake"
 - Enterprise-grade PHP 8.4
 
-#### Coming Soon
+## Installation
 
-- A RESTful API
-- Play it on your favorite `curl`-enabled console
+Ensure you have a functional Docker installation, including the `docker compose` plugin.
 
-## Requirements
+From the root of the project: 
 
-- Docker (& Docker Compose)
+##### Install the Composer dependencies:
 
-##### Try it now with:
+```docker
+docker run --rm  composer install
+```
 
-```bash
+##### Start up the server:
+
+```docker
+docker compose up
+```
+
+##### Try out SnakePHP on the command like:
+
+```docker
 docker compose run --rm php-cli bin/snake
 ```
-Use `--sprite text` to disable in-terminal emoji.
+
+## API Documentation
+
+The API server will be available by default at `http://localhost:8080`
+
+### Create a new game: `POST /v1/snake/game`
+
+Example: 
+
+```bash
+curl -X POST http://localhost:8080/v1/snake/game
+```
+
+### Get the current game state: `GET /v1/snake/game`
+
+Example: 
+
+```bash
+curl http://localhost:8080/v1/snake/game
+```
+
+### Move the snake: `POST /v1/snake/move/:direction`
+
+| Path Variable | Type | Values | 
+|---|---|---|
+| `:direction` | string | `up`, `down`, `left`, `right` |
+
+Example: 
+
+```bash
+curl -X POST http://localhost:8080/v1/snake/move/up
+```
+
+### Render the board: `GET /v1/snake/render/:type`
+
+| Path Variable | Type | Values | 
+|---|---|---|
+| `:type` | string | `text`, `html` |
+
+Example: 
+
+```bash
+curl http://localhost:8080/v1/snake/render/text
+```
+
+Response: HTML or plaintext
+
+### JSON Response
+
+**Content-Type:** application/json
+
+```json
+{
+    "score": int,
+    "gameOver" bool,
+    "board": {
+        "width": int,
+        "height": int,
+        "cells": [ // multidimensional array of rows (n = height)
+            [
+                // CellType int: 0 = Empty, 1 = Food, 2 = Wall ( n = width)
+            ]
+        ]
+    },
+    "snake": {
+        "body": [
+            [x, y] // int position, tail to head
+        ],
+        "direction": string, // direction the head is pointing
+        "length": int
+    }
+}
+```
+
+### Plaintext Response
+
+**Content-Type:** text/plain
+
+**Example:**
+
+```
+....................
+....................
+....................
+...F................
+....................
+....................
+....................
+..............S.....
+..............S.....
+....................
+```
+
+### HTML Response
+
+**Content-Type:** text/html
+
+**Example:**
+
+```html
+<pre>....................
+....................
+....................
+...F................
+....................
+....................
+....................
+..............S.....
+..............S.....
+....................
+</pre>
+```
