@@ -41,8 +41,9 @@ $router->setStrategy($applicationStrategy);
 // API
 $router->group('/v1/snake', function ($router) {
     \Angorb\RestedSnake\Controller::registerRoutes($router);
-})// TODO ->middleware(\Authentication\Token::auth($request))
-  ->setStrategy($jsonStrategy);
+})
+// TODO ->middleware(\Authentication\Token::auth($request))
+->setStrategy($jsonStrategy);
 
 // emit the HTTP response
 try {

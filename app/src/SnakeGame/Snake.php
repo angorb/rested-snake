@@ -26,6 +26,14 @@ final class Snake implements \JsonSerializable
      */
     private string $direction;
 
+    /**
+     * Creates a new Snake instance.
+     *
+     * @param int    $startX
+     * @param int    $startY
+     * @param string $initialDirection
+     * @throws \InvalidArgumentException if the initial direction is invalid
+     */
     public function __construct(int $startX, int $startY, string $initialDirection)
     {
         $this->assertValidDirection($initialDirection);
@@ -87,6 +95,23 @@ final class Snake implements \JsonSerializable
     public function getLength(): int
     {
         return count($this->body);
+    }
+
+    /**
+     * Returns the coordinates of the next head position.
+     *
+     * @return array
+     */
+    public function getNextHeadPosition(): array
+    {
+        [$x, $y] = $this->getHead();
+
+        return match ($this->direction) {
+            self::UP    => [$x, $y - 1],
+            self::DOWN  => [$x, $y + 1],
+            self::LEFT  => [$x - 1, $y],
+            self::RIGHT => [$x + 1, $y],
+        };
     }
 
     /**
@@ -216,15 +241,16 @@ final class Snake implements \JsonSerializable
      *
      * @param string $direction
      * @return void
+     * @throws \InvalidArgumentException
      */
     private function assertValidDirection(string $direction): void
     {
         if (
             !in_array($direction, [
-            self::UP,
-            self::DOWN,
-            self::LEFT,
-            self::RIGHT,
+                self::UP,
+                self::DOWN,
+                self::LEFT,
+                self::RIGHT,
             ], true)
         ) {
             throw new \InvalidArgumentException(
@@ -249,23 +275,6 @@ final class Snake implements \JsonSerializable
             self::DOWN  => $next === self::UP,
             self::LEFT  => $next === self::RIGHT,
             self::RIGHT => $next === self::LEFT,
-        };
-    }
-
-    /**
-     * Returns the coordinates of the next head position.
-     *
-     * @return array
-     */
-    public function getNextHeadPosition(): array
-    {
-        [$x, $y] = $this->getHead();
-
-        return match ($this->direction) {
-            self::UP    => [$x, $y - 1],
-            self::DOWN  => [$x, $y + 1],
-            self::LEFT  => [$x - 1, $y],
-            self::RIGHT => [$x + 1, $y],
         };
     }
 }
