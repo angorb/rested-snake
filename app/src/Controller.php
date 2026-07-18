@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Angorb\RestedSnake;
 
+use Angorb\RestedSnake\SnakeGame\AsciiRenderer;
 use Angorb\RestedSnake\SnakeGame\Board;
 use Angorb\RestedSnake\SnakeGame\FoodSpawner;
 use Angorb\RestedSnake\SnakeGame\GameEngine;
 use Angorb\RestedSnake\SnakeGame\Snake;
+use Angorb\RestedSnake\SnakeGame\Sprites\TextSprite;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\ResponseInterface;
 
 class Controller implements GameRequestHandlerInterface, RouteRegistrarInterface
 {
@@ -20,9 +23,9 @@ class Controller implements GameRequestHandlerInterface, RouteRegistrarInterface
     /**
      * Creates a new game instance
      *
-     * @return array
+     * @return ResponseInterface
      */
-    public function createGame(ServerRequestInterface $request, array $args): array
+    public function createGame(ServerRequestInterface $request, array $args): ResponseInterface
     {
         $board = new Board(20, 10);
         $snake = new Snake(10, 5, 'right');
@@ -37,36 +40,34 @@ class Controller implements GameRequestHandlerInterface, RouteRegistrarInterface
         );
 
         $this->gameRepository->saveGameState($game->jsonSerialize());
-        return $this->loadGameState();
+
+        return new \Laminas\Diactoros\Response\JsonResponse($this->loadGameState());
     }
 
     /**
      * Retrieves the current game state
      *
-     * @return array
+     * @return ResponseInterface
      */
-    public function getGameState(ServerRequestInterface $request, array $args): array
+    public function getGameState(ServerRequestInterface $request, array $args): ResponseInterface
     {
-        return $this->loadGameState();
-    }
-
-    private function loadGameState(): array
-    {
-        return $this->gameRepository->loadGameState() ?? [];
+        return new \Laminas\Diactoros\Response\JsonResponse($this->loadGameState());
     }
 
     /**
      * Moves the snake in the specified direction and updates the game state
      *
      * @param string $direction The direction to move the snake ('up', 'down', 'left', 'right')
-     * @return array The updated game state after moving the snake
+     * @return ResponseInterface The updated game state after moving the snake
      * @throws \RuntimeException If no game state is found when trying to move the snake
      */
-    public function moveSnake(ServerRequestInterface $request, array $args): array
+    public function moveSnake(ServerRequestInterface $request, array $args): ResponseInterface
     {
         $gameState = $this->loadGameState();
         if (empty($gameState)) {
-            throw new \RuntimeException('No game state found. Please create a game first.');
+            return new \Laminas\Diactoros\Response\JsonResponse([
+                'error' => 'No game state found. Please create a game first.',
+            ], 400);
         }
 
         $game = GameEngine::fromArray($gameState);
@@ -75,23 +76,73 @@ class Controller implements GameRequestHandlerInterface, RouteRegistrarInterface
 
         $gameState = $game->jsonSerialize();
         $this->gameRepository->saveGameState($gameState);
-        return $this->loadGameState();
+        return new \Laminas\Diactoros\Response\JsonResponse($this->loadGameState());
     }
 
-    public function test(ServerRequestInterface $request, array $args): array
+    /**
+     * Renders the current state of the snake game
+     *
+     * @param \Psr\Http\Message\ServerRequestInterface $request
+     * @param array                                    $args
+     * @return \Psr\Http\Message\ResponseInterface
+     */
+    public function renderSnakeGame(ServerRequestInterface $request, array $args): ResponseInterface
     {
-        return [
+        $gameState = $this->loadGameState();
+        if (empty($gameState)) {
+            return new \Laminas\Diactoros\Response\JsonResponse([
+                'error' => 'No game state found. Please create a game first.',
+            ], 400);
+        }
+
+        $game = GameEngine::fromArray($gameState);
+        $board = $game->getBoard();
+        $snake = $game->getSnake();
+
+        $sprite = new TextSprite();
+        $renderer = new AsciiRenderer($sprite);
+
+        $renderedGameState = $renderer->render($board, $snake);
+
+        $response = match ($args['type']) {
+            'text' => new \Laminas\Diactoros\Response\TextResponse($renderedGameState),
+            'html' => new \Laminas\Diactoros\Response\HtmlResponse(
+                '<pre>' . $renderedGameState . '</pre>'
+            ),
+            default => new \Laminas\Diactoros\Response\JsonResponse([
+                'error' => 'Invalid render type. Use "text" or "html".',
+            ], 400),
+        };
+
+        return $response;
+    }
+
+    public function test(ServerRequestInterface $request, array $args): ResponseInterface
+    {
+        return new \Laminas\Diactoros\Response\JsonResponse([
             'status' => 'ok',
             'message' => "Hello, $args[word]!",
-        ];
+        ]);
     }
 
     public static function registerRoutes(\League\Route\RouteCollectionInterface $router): void
     {
         $router->map('POST', '/game', [self::class, 'createGame']);
         $router->map('GET', '/game', [self::class, 'getGameState']);
-        $router->map('POST', '/snake/move/{direction}', [self::class, 'moveSnake']);
+        //$router->map('POST', '/snake/move/{direction}', [self::class, 'moveSnake']); // TODO - remove this
+        $router->map('POST', '/move', [self::class, 'moveSnake']);
+        $router->map('GET', '/render/{type}', [self::class, 'renderSnakeGame']);
 
         $router->map('GET', '/test/{word}', [self::class, 'test']); // DEBUG route for testing purposes
+    }
+
+    /**
+     * Loads the current game state from the repository
+     *
+     * @return array
+     */
+    private function loadGameState(): array
+    {
+        return $this->gameRepository->loadGameState() ?? [];
     }
 }
