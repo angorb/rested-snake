@@ -15,6 +15,25 @@ class BasicFileRepository implements GameRepositoryInterface
 
     public function saveGameState(array $gameState): void
     {
+        $pathDirectory = dirname($this->filePath);
+
+        if (!is_dir($pathDirectory)) {
+            if (
+                !mkdir($pathDirectory, 0775, true)
+                && !is_dir($pathDirectory)
+            ) {
+                throw new \RuntimeException(
+                    "Failed to create directory: {$pathDirectory}"
+                );
+            }
+        }
+
+        if (!is_writable($pathDirectory)) {
+            throw new \RuntimeException(
+                "Directory {$pathDirectory} is not writable."
+            );
+        }
+
         file_put_contents($this->filePath, json_encode($gameState));
     }
 
