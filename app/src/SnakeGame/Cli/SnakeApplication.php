@@ -14,6 +14,7 @@ use League\CLImate\CLImate;
 
 final class SnakeApplication
 {
+    private const string GAME_STATE_FILE = './data/snake_game_cli_state.json';
     private CLImate $cli;
     private GameEngine $game;
     private AsciiRenderer $renderer;
@@ -151,7 +152,7 @@ final class SnakeApplication
         ];
 
         file_put_contents(
-            'snake_game_state.json',
+            self::GAME_STATE_FILE,
             json_encode($state, JSON_PRETTY_PRINT)
         );
     }
@@ -163,13 +164,13 @@ final class SnakeApplication
      */
     private function loadGameState(): void
     {
-        if (!file_exists('snake_game_state.json')) {
+        if (!file_exists(self::GAME_STATE_FILE)) {
             return;
         }
 
         try {
             $state = json_decode(
-                json: file_get_contents('snake_game_state.json'),
+                json: file_get_contents(self::GAME_STATE_FILE),
                 associative: true,
                 flags: JSON_THROW_ON_ERROR
             );
@@ -188,8 +189,8 @@ final class SnakeApplication
      */
     private function deleteGameState(): void
     {
-        if (file_exists('snake_game_state.json')) {
-            unlink('snake_game_state.json');
+        if (file_exists(self::GAME_STATE_FILE)) {
+            unlink(self::GAME_STATE_FILE);
         }
     }
 
